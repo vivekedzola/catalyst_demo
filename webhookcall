@@ -1,0 +1,267 @@
+'use strict';
+
+const express = require('express');
+const catalyst = require('zcatalyst-sdk-node');
+const bodyParser = require('body-parser')
+
+const app = express();
+app.use(bodyParser.json()) 
+
+// to handle create or update request from glific
+app.post("/push_data", (req, res) => {
+
+    const catalystApp = catalyst.initialize(req);
+	let functions = catalystApp.functions();
+     const bodystringjson = JSON.stringify(req.body);
+     const recieved_body = JSON.parse(bodystringjson);
+     // insert to ZOHO creator Form
+            let conf = {
+            args: {
+            response: bodystringjson,
+             type:'Create',
+            posturl:'https://creator.zoho.com/api/v2/thenudgefoundation784/job-set-go/form/Creator_Catalyst_Data'
+            }
+             }
+        let fucntion_execute = functions.execute(1083000000123062, conf);
+         fucntion_execute.then((functionResponse) => {
+                console.log(functionResponse);
+            });
+// to insert to webhooks table - Create
+let rowData = 
+    { 
+       Data_Received: req.body,
+       Type:'Create'
+    };
+    let datastore = catalystApp.datastore();
+    let table = datastore.table('Webhooks_Data');
+    let insertPromise = table.insertRow(rowData);
+// json split for all params
+
+if(bodystringjson.includes('contact') === true){
+    // add dob and genders
+     var phone_number_val = "";
+    if(bodystringjson.includes('phone') === true){
+      phone_number_val = recieved_body.contact.phone;
+    }
+    var name_val = "";
+    if(bodystringjson.includes('name":{') === true){
+       name_val =  recieved_body.results.name.input;
+    }
+  var okbangalore = "";
+  if(bodystringjson.includes('okinbangalore":{') === true){
+       okbangalore = recieved_body.results.okinbangalore.input;
+    }
+  var oksalary= "";
+   if(bodystringjson.includes('okwithsalary":{') === true){
+        oksalary= recieved_body.results.okwithsalary.input;
+    }
+  var purpose_val = "";
+   if(bodystringjson.includes('purpose":{') === true){
+        purpose_val = recieved_body.results.purpose.input;
+    }
+    var sorryjobupto15k_val = "";
+   if(bodystringjson.includes('sorryjobupto15k":{') === true){
+        sorryjobupto15k_val = recieved_body.results.sorryjobupto15k.input;
+    }
+    var refer_val = "";
+   if(bodystringjson.includes('refer":{') === true){
+        refer_val = recieved_body.results.refer.input;
+    }
+    var preferredlocation_val = "";
+   if(bodystringjson.includes('preferlocation":{') === true){
+        preferredlocation_val = recieved_body.results.preferlocation.input;
+    }
+     var pincodeprefferedlocation_val = "";
+   if(bodystringjson.includes('pincodeofpreferedlocation":{') === true){
+        pincodeprefferedlocation_val = recieved_body.results.pincodeofpreferedlocation.input;
+    }
+    var sorryjobloacation_val = "";
+   if(bodystringjson.includes('sorryjoblocation":{') === true){
+        sorryjobloacation_val = recieved_body.results.sorryjoblocation.input;
+    }
+    var preference_val = "";
+   if(bodystringjson.includes('preference":{') === true){
+        preference_val = recieved_body.results.preference.input;
+    }
+    var assign_telecaller_val = "";
+   if(bodystringjson.includes('assign_telecaller') === true){
+        assign_telecaller_val = recieved_body.assign_telecaller;
+    }
+    var dob_val = "";
+   if(bodystringjson.includes('dob":{') === true){
+        dob_val =recieved_body.results.dob.input;
+    }
+     var gender_val = "";
+   if(bodystringjson.includes('gender":{') === true){
+        gender_val =recieved_body.results.gender.input;
+    }
+     var referphone_val = "";
+   if(bodystringjson.includes('referphone":{') === true){
+        referphone_val =recieved_body.results.referphone.input;
+    }
+   var demoprefrenceday_val = "";
+   if(bodystringjson.includes('demoprefrenceday":{') === true){
+        demoprefrenceday_val =recieved_body.results.demoprefrenceday.input;
+    }
+     var demopreferencetime_val = "";
+   if(bodystringjson.includes('demoprefrencetime":{') === true){
+        demopreferencetime_val =recieved_body.results.demoprefrencetime.input;
+    }
+    var bookedslot_val = "";
+     if(bodystringjson.includes('bookedslot":') === true){
+        bookedslot_val =recieved_body.bookedslot;
+    }
+    var demoslots_val ="";
+     if(bodystringjson.includes('demoslots":{') === true){
+        demoslots_val =JSON.stringify(recieved_body.results.demoslots);
+    }
+    // common arguments
+    let studentparam = {
+            args: {
+            phone:phone_number_val,
+             name: name_val,
+             bangalore : okbangalore,
+             salary: oksalary,
+             sorryjobupto15k: sorryjobupto15k_val,
+             refer:refer_val,
+             preferredlocation:preferredlocation_val,
+             pincodeprefferedlocation:pincodeprefferedlocation_val,
+             sorryjobloacation:sorryjobloacation_val,
+             preference:preference_val,
+             purpose:purpose_val,
+             assign_telecaller:assign_telecaller_val,
+             dob:dob_val,
+             gender:gender_val,
+             referphone:referphone_val,
+             demopreferencetime:demopreferencetime_val,
+             demoprefrenceday:demoprefrenceday_val,
+             demoslots:demoslots_val,
+             bookedslot:bookedslot_val
+            }
+        }
+// to insert/update into Incoming Student Details
+    let function_execute = functions.execute(1083000000123368, studentparam);
+         function_execute.then((functionResponse) => {
+                console.log(functionResponse);
+            });
+// to check and create student record in creator and to update ZOHO ID
+    let function_createStudent = functions.execute(1083000000118944, studentparam);
+        function_createStudent.then((function_createStudentResponse) => {
+            console.log(function_createStudentResponse);
+        });
+// to insert into demo preference
+        let function_execute_demo = functions.execute(1083000000118960, studentparam);
+         function_execute_demo.then((functionResponse_demo) => {
+                console.log(functionResponse_demo);
+            });
+}
+    insertPromise.then((row) => {
+            res.status(200).send("Data Received");
+        });
+
+});
+
+// <--- to handle read request from glific ---->
+app.post("/get_data", (req, res) => {
+
+    const catalystApp = catalyst.initialize(req);
+	let functions = catalystApp.functions();
+     const bodystringjson = JSON.stringify(req.body);
+     const recieved_body = JSON.parse(bodystringjson);
+let rowData = 
+    { 
+       Data_Received: req.body,
+       Type:'Read'
+    };
+    let datastore = catalystApp.datastore();
+    let table = datastore.table('Webhooks_Data');
+    let insertPromise = table.insertRow(rowData);
+    insertPromise.then((row) => {
+    // push to creator
+            let conf = {
+            args: {
+            response: bodystringjson,
+            type:'Read',
+            posturl:'https://creator.zoho.com/api/v2/thenudgefoundation784/job-set-go/form/Creator_Catalyst_Data'
+            }
+             }
+        let fucntion_execute = functions.execute(1083000000123062, conf);
+         fucntion_execute.then((functionResponse) => {
+                console.log(functionResponse);
+            });
+             var action_val = "";
+             var read_return_val = "";
+            if(bodystringjson.includes('action":') === true){
+                    action_val =recieved_body.action;
+            }
+            if( action_val === 'getdemoslots')
+            {
+                var demopreferencetime_val = "";
+                if(bodystringjson.includes('demoprefrencetime":{') === true){
+                        demopreferencetime_val =recieved_body.results.demoprefrencetime.input;
+                }
+                var demoprefrenceday_val = "";
+                if(bodystringjson.includes('demoprefrenceday":{') === true){
+                        demoprefrenceday_val =recieved_body.results.demoprefrenceday.input;
+                }
+                var phone_number_val = "";
+                if(bodystringjson.includes('phone') === true){
+                phone_number_val = recieved_body.contact.phone;
+                }
+                let actionparam = {
+                args: {
+                  daydemo:demoprefrenceday_val,
+                  timedemo:demopreferencetime_val,
+                              phone:phone_number_val
+                }
+		           }
+               
+                read_return_val ="1";
+                    try{
+                         read_return_val ="2";
+                     (async () => {
+                    try {
+                        read_return_val ="3";
+                        // function to return response json
+                         read_return_val = await( functions.execute(1083000000140558, actionparam));
+                         read_return_val ="4";
+                        //  read_return_val = "{\"Slot1\": \"MON 13:00\",\"1\":\"123456678\",\"Slot2\": \"TUE 13:00\",\"2\":\"87654321\",\"Slot3\": \"WED 13:00\",\"3\":\"54321876\"}";
+                        
+                    } catch (error) {
+                       read_return_val = error.message;
+                    }
+                    })();
+                    }
+                    catch (error1) {
+                       read_return_val = error1.message;
+                    }
+
+                //  read_return_val = "{\"Slot1\": \"MON 13:00\",\"1\":\"123456678\",\"Slot2\": \"TUE 13:00\",\"2\":\"87654321\",\"Slot3\": \"WED 13:00\",\"3\":\"54321876\"}";
+		        //
+                 
+            }
+            if( action_val === 'getdemoscheduledcount')
+            {
+                var phone_number_val = "";
+                if(bodystringjson.includes('phone') === true){
+                phone_number_val = recieved_body.contact.phone;
+                }
+                let actionparam = {
+					args: {
+                        phone:phone_number_val
+					}
+		        }
+                read_return_val = await(functions.execute(1083000000123865, actionparam));    
+            }
+            res.status(200).send(read_return_val);
+        });
+
+});
+
+app.all("/", (req,res) => {
+	res.status(200).send("I am Live and Ready.");
+
+});
+
+module.exports = app;
+
