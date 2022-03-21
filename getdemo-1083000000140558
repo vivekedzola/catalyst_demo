@@ -1,0 +1,16 @@
+const catalyst = require('zcatalyst-sdk-node');
+module.exports = async (context, basicIO) => {
+    const catalystApp = catalyst.initialize(context);
+    var returnparam = "";
+	let functions = catalystApp.functions();
+try{
+ returnparam = "{\"Slot1\": \"MON 14:00\",\"1\":\"123456678\",\"Slot2\": \"TUE 13:00\",\"2\":\"87654321\",\"Slot3\": \"WED 13:00\",\"3\":\"54321876\"}";
+} 
+catch (error1) {
+		returnparam = error1.message;
+	}
+
+basicIO.write(returnparam);
+             
+	context.close(); 
+};
